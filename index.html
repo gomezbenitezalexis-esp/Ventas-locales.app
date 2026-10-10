@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Productos y ventas</title>
+<style>
+:root{--fondo:#10131a;--panel:#1b202b;--borde:#343c4c;--texto:#f4f6fb;--suave:#aeb8c9;--azul:#2786ff;--verde:#16a36a;--rojo:#e44855}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fondo);color:var(--texto);font:16px Arial,sans-serif}
+header{padding:18px 12px;text-align:center;background:#171c26;border-bottom:2px solid var(--azul)}
+h1{font-size:24px;margin:0 0 6px} header p{margin:0;color:var(--suave);font-size:13px}
+main{max-width:1100px;margin:auto;padding:12px}
+section{background:var(--panel);border:1px solid var(--borde);border-radius:12px;padding:14px;margin-bottom:14px}
+h2{font-size:20px;margin:0 0 12px}
+.formgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+label{display:block;color:var(--suave);font-size:13px;margin-bottom:5px}
+input,select,button{font:inherit;border-radius:8px}
+input,select{width:100%;min-width:0;padding:10px;background:#10151e;color:var(--texto);border:1px solid #465064}
+input[type=color]{height:43px;padding:4px}
+input[type=file]{font-size:13px}
+button{border:0;padding:10px 12px;font-weight:bold;cursor:pointer;background:var(--azul);color:white}
+button:active{transform:scale(.98)}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.secondary{background:#465064}.success{background:var(--verde)}.danger{background:var(--rojo)}.small{font-size:12px;padding:7px 9px}
+.note{font-size:12px;color:var(--suave);line-height:1.4}
+.tablewrap{width:100%;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px;min-width:650px}
+th,td{padding:9px 7px;border-bottom:1px solid var(--borde);text-align:left;vertical-align:middle}
+th{color:#c8d7f4;background:#222a38}
+td img{width:58px;height:58px;object-fit:contain;background:#fff;border-radius:7px}
+/* Historial: imagen pequeña circular al lado del nombre del producto */
+.producto-historial{min-width:145px;width:190px;text-align:left;vertical-align:middle}
+.producto-linea{display:flex;align-items:center;gap:7px;min-width:125px}
+.imagen-producto-circular{width:30px;height:30px;min-width:30px;object-fit:cover;border-radius:50%;border:2px solid #fff;background:#fff;display:inline-block}
+.sin-imagen-circular{width:30px;height:30px;min-width:30px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:#39465b;border:2px solid #fff;font-size:15px}
+.nombre-producto-historial{display:inline-block;color:#fff;font-size:14px;font-weight:900;line-height:1.25;white-space:normal;overflow-wrap:anywhere}
+.swatch{display:inline-block;width:18px;height:18px;border-radius:50%;vertical-align:middle;border:1px solid #ffffff66}
+.totalbar{display:flex;justify-content:space-between;gap:10px;align-items:center;background:#0e1823;border:1px solid #2d4965;padding:12px;border-radius:9px;margin-top:12px}
+.totalbar strong{font-size:23px;color:#71c6ff}
+.statgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:12px}
+.stat{background:#111720;border:1px solid var(--borde);border-radius:9px;padding:10px}.stat span{display:block;color:var(--suave);font-size:12px}.stat b{font-size:20px}
+.filterbox{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:12px;margin:10px 0;background:#111720;border:1px solid var(--borde);border-radius:9px}.filterbox .wide{grid-column:1/-1}.filter-title{font-weight:bold;margin:0 0 8px;color:#c8d7f4}@media(min-width:720px){.filterbox{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.empty{text-align:center;color:var(--suave);padding:18px}
+.product-options{display:grid;grid-template-columns:repeat(auto-fill,minmax(125px,1fr));gap:9px}
+.product-option{display:flex;flex-direction:column;align-items:flex-start;gap:5px;min-height:105px;padding:9px 7px;background:#111720;border:2px solid var(--borde);border-radius:10px;color:var(--texto);text-align:left;white-space:normal}
+.product-option.selected{border-color:var(--azul);background:#172b43;box-shadow:0 0 0 1px var(--azul)}
+.product-choice-line{display:flex;align-items:center;gap:7px;width:100%;min-width:0}
+.product-option img,.product-option .choice-placeholder{width:30px;height:30px;min-width:30px;object-fit:cover;background:#fff;border:1px solid #fff;border-radius:50%;display:inline-flex;align-items:center;justify-content:center}
+.product-option .product-name{font-weight:800;overflow-wrap:anywhere}
+.product-option .product-code,.product-option .product-price{padding-left:37px}
+.product-option .product-name{font-size:14px;font-weight:bold;overflow-wrap:anywhere}
+.product-option .product-code{font-size:11px;color:var(--suave)}
+.product-option .product-price{font-size:14px;color:#7fe0b1;font-weight:bold}
+.product-option .product-color{width:12px;height:12px;border-radius:50%;border:1px solid #ffffff77;display:inline-block;vertical-align:middle}
+@media(min-width:720px){.formgrid{grid-template-columns:repeat(4,minmax(0,1fr))}.statgrid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+</style>
+</head>
+<body>
+<header><h1>📦 PRODUCTOS Y VENTAS</h1><p>Sincronización en la nube, imágenes, historial y respaldos</p></header>
+<main>
+<section id="cloudSection">
+<h2>☁️ Sincronizar celular y PC</h2>
+<p class="note">Inicia sesión con la misma cuenta en todos tus dispositivos. Necesitas conexión a Internet para sincronizar.</p>
+<div id="authFormWrap">
+<form id="cloudAuthForm">
+<div class="formgrid">
+<div><label for="cloudEmail">Correo electrónico</label><input id="cloudEmail" type="email" autocomplete="username" required placeholder="tu correo"></div>
+<div><label for="cloudPassword">Contraseña</label><input id="cloudPassword" type="password" autocomplete="current-password" minlength="6" required placeholder="Mínimo 6 caracteres"></div>
+</div>
+<div class="actions"><button type="submit" class="success">Iniciar sesión</button><button type="button" class="secondary" id="createCloudAccount">Crear cuenta</button></div>
+</form>
+</div>
+<div id="cloudLoggedIn" hidden>
+<p id="cloudUserLabel"></p>
+<div class="actions"><button type="button" class="success" id="uploadLocalToCloud">Subir datos de este dispositivo a la nube</button><button type="button" class="secondary" id="downloadCloudToLocal">Usar datos de la nube en este dispositivo</button><button type="button" class="danger" id="cloudLogout">Cerrar sesión</button></div>
+</div>
+<div id="cloudStatus" role="status" class="note" style="margin-top:10px">Estado: sin iniciar sesión. Los datos actuales siguen guardados localmente.</div>
+</section>
+<section>
+<h2>🛍️ Registrar venta</h2>
+<form id="saleForm">
+<div class="formgrid">
+<div style="grid-column:1/-1"><label>Selecciona un producto tocando su botón</label><div id="productOptions" class="product-options"><div class="empty">Primero agrega productos.</div></div></div>
+<div><label for="saleDate">Fecha de venta (fecha del sistema)</label><input id="saleDate" type="date" required></div>
+<div><label for="saleShift">Jornada</label><select id="saleShift" required><option value="mañana">Mañana</option><option value="noche">Noche</option></select></div>
+<div><label for="saleQty">Cantidad</label><input id="saleQty" type="number" min="1" step="1" value="1" required></div>
+<div><label for="salePrice">Precio por unidad ($)</label><input id="salePrice" type="number" min="0" step="1" required></div>
+</div>
+<div class="totalbar"><span>Subtotal de esta venta</span><strong id="saleSubtotal">$ 0</strong></div>
+<div class="actions"><button type="submit" class="success">Registrar venta</button></div>
+<p class="note">Elige un producto tocando su botón. El precio se carga automáticamente, pero puedes cambiarlo para una venta puntual.</p>
+</form>
+</section>
+<section>
+<h2>🧾 Historial de ventas</h2>
+<div class="statgrid">
+<div class="stat"><span>Artículos vendidos</span><b id="itemsSold">0</b></div>
+<div class="stat"><span>Número de ventas</span><b id="salesCount">0</b></div>
+<div class="stat"><span>Total vendido</span><b id="grandTotal">$ 0</b></div>
+</div>
+<div class="filterbox">
+<p class="filter-title wide">🔎 Buscar ventas por fechas y jornada</p>
+<div><label for="filterFrom">Desde la fecha</label><input id="filterFrom" type="date"></div>
+<div><label for="filterTo">Hasta la fecha</label><input id="filterTo" type="date"></div>
+<div><label for="filterShift">Jornada</label><select id="filterShift"><option value="ambas">Ambas jornadas</option><option value="mañana">Solo mañana</option><option value="noche">Solo noche</option><option value="sin">Sin jornada registrada</option></select></div>
+<div class="actions wide"><button type="button" class="secondary" id="applyFilters">Buscar ventas</button><button type="button" class="secondary" id="clearFilters">Mostrar todas</button></div>
+</div>
+<div class="tablewrap"><table><thead><tr><th>Fecha</th><th>Jornada</th><th>Producto</th><th>Código</th><th>Cantidad</th><th>Precio unitario</th><th>Subtotal (precio × cantidad)</th><th>Acciones</th></tr></thead><tbody id="salesBody"></tbody></table></div>
+<div id="salesEmpty" class="empty">Todavía no has registrado ventas.</div>
+<div class="totalbar"><span>TOTAL GENERAL VENDIDO</span><strong id="grandTotalBottom">$ 0</strong></div>
+<div class="actions">
+<button type="button" class="success" id="newSalesHistory">＋ Nuevo historial de ventas</button>
+<button type="button" class="danger" id="clearSalesHistory">Eliminar todas las ventas</button>
+</div>
+<p class="note">“Nuevo historial” guarda las ventas actuales como un historial anterior y deja la tabla actual vacía para comenzar otra cuenta. Los historiales anteriores se conservan en este dispositivo.</p>
+<div id="archivedHistoriesContainer"></div>
+</section>
+<section>
+<h2 id="productFormTitle">➕ Agregar producto</h2>
+<form id="productForm">
+<div class="formgrid">
+<div><label for="pName">Nombre del producto</label><input id="pName" required maxlength="100" placeholder="Ej. Gaseosa"></div>
+<div><label for="pCode">Código</label><input id="pCode" required maxlength="50" placeholder="Ej. PR001"></div>
+<div><label for="pPrice">Precio de venta ($)</label><input id="pPrice" type="number" min="0" step="1" required placeholder="0"></div>
+<div><label for="pColor">Color identificador</label><input id="pColor" type="color" value="#2786ff"></div>
+<div><label for="pImage">Imagen del producto (opcional)</label><input id="pImage" type="file" accept="image/*"></div>
+<div><label>Vista previa</label><img id="imagePreview" alt="Vista previa" style="width:58px;height:58px;object-fit:contain;background:#fff;border-radius:7px;display:none"></div>
+</div>
+<div class="actions"><button id="saveProductBtn" type="submit">Guardar producto</button><button id="cancelEditBtn" type="button" class="secondary" hidden>Cancelar edición</button></div>
+<p class="note">Los datos se guardan localmente. Al iniciar sesión y activar la sincronización, también se compartirán con tu cuenta en la nube. Conserva respaldos JSON.</p>
+</form>
+</section>
+<section>
+<h2>📋 Productos guardados</h2>
+<div class="tablewrap"><table><thead><tr><th>Imagen</th><th>Producto</th><th>Código</th><th>Precio</th><th>Color</th><th>Acciones</th></tr></thead><tbody id="productsBody"></tbody></table></div>
+<div id="productsEmpty" class="empty">Todavía no has agregado productos.</div>
+<div class="actions"><button type="button" class="danger" id="clearProducts">Eliminar todos los productos</button></div>
+</section>
+<section>
+<h2>💾 Respaldo y datos</h2>
+<div class="actions">
+<button type="button" class="success" id="exportExcel">Descargar respaldo Excel (.xlsx)</button>
+<button type="button" class="secondary" id="exportCsv">Descargar CSV compatible con Excel</button>
+<button type="button" class="secondary" id="importBackupBtn">Restaurar respaldo JSON</button>
+<input type="file" id="importBackup" accept=".json,application/json" hidden>
+<button type="button" class="danger" id="clearSales">Borrar historial de ventas</button>
+</div>
+<p class="note">El respaldo Excel contiene hojas de Productos y Ventas. Guarda también un respaldo JSON para conservar las imágenes y poder restaurarlas en este navegador. Exporta respaldos periódicamente.</p>
+</section>
+</main>
+<script>
+'use strict';
+const STORAGE_KEY='productosVentasLocalV1';
+let products=[], sales=[], archivedHistories=[], editingProductId=null, pendingImage='', selectedProductId=null;
+const $=id=>document.getElementById(id);
+const money=n=>new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0}).format(Number(n)||0);
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const escapeHtml=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function save(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify({products,sales,archivedHistories}));if(window.cloudSyncSave)window.cloudSyncSave().catch(e=>console.error('Error de sincronización',e));return true}catch(e){alert('No se pudieron guardar los datos. Las imágenes se comprimen automáticamente; si el aviso continúa, descarga un respaldo JSON y elimina productos o historiales que ya no necesites.');return false}}
+function load(){try{const d=JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}');products=Array.isArray(d.products)?d.products:[];sales=Array.isArray(d.sales)?d.sales:[];archivedHistories=Array.isArray(d.archivedHistories)?d.archivedHistories:[]}catch(e){products=[];sales=[];archivedHistories=[]}}
+function setToday(){const d=new Date();$('saleDate').value=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function fileToDataUrl(file){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(file)})}
+function compressDataUrl(dataUrl,maxSide=420,quality=0.58){return new Promise((resolve,reject)=>{if(!dataUrl||!String(dataUrl).startsWith('data:image/')){resolve(dataUrl||'');return}const img=new Image();img.onload=()=>{try{const scale=Math.min(1,maxSide/Math.max(img.naturalWidth||img.width,img.naturalHeight||img.height));const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round((img.naturalWidth||img.width)*scale));canvas.height=Math.max(1,Math.round((img.naturalHeight||img.height)*scale));const ctx=canvas.getContext('2d');ctx.fillStyle='#ffffff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);resolve(canvas.toDataURL('image/jpeg',quality))}catch(err){resolve(dataUrl)}};img.onerror=()=>resolve(dataUrl);img.src=dataUrl})}
+$('pImage').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;if(!f.type.startsWith('image/')){alert('Selecciona un archivo de imagen.');e.target.value='';return}try{const original=await fileToDataUrl(f);pendingImage=await compressDataUrl(original);$('imagePreview').src=pendingImage;$('imagePreview').style.display='block';const kb=Math.round(pendingImage.length*0.75/1024);if(kb>180)alert('La imagen fue reducida, pero aún pesa aproximadamente '+kb+' KB. Si tienes muchas imágenes, usa fotos más pequeñas.')}catch(err){alert('No se pudo leer o comprimir la imagen.')}});
+$('productForm').addEventListener('submit',async e=>{
+ e.preventDefault();
+ const name=$('pName').value.trim(),code=$('pCode').value.trim(),price=Number($('pPrice').value),color=$('pColor').value;
+ if(!name||!code||!Number.isFinite(price)||price<0)return;
+ if(products.some(p=>p.code.toLowerCase()===code.toLowerCase()&&p.id!==editingProductId)){alert('Ya existe un producto con ese código. Usa un código diferente.');return}
+ let image=pendingImage;
+ if(!image&&editingProductId){image=products.find(p=>p.id===editingProductId)?.image||''}
+ const product={id:editingProductId||uid(),name,code,price,color,image};
+ if(editingProductId)products=products.map(p=>p.id===editingProductId?product:p);else products.push(product);
+ if(!save())return;
+ resetProductForm();render();alert(editingProductId?'Producto actualizado.':'Producto guardado.');
+});
+function resetProductForm(){editingProductId=null;pendingImage='';$('productForm').reset();$('pColor').value='#2786ff';$('imagePreview').removeAttribute('src');$('imagePreview').style.display='none';$('productFormTitle').textContent='➕ Agregar producto';$('saveProductBtn').textContent='Guardar producto';$('cancelEditBtn').hidden=true;$('pImage').value=''}
+$('cancelEditBtn').addEventListener('click',resetProductForm);
+function editProduct(id){const p=products.find(x=>x.id===id);if(!p)return;editingProductId=id;pendingImage=p.image||'';$('pName').value=p.name;$('pCode').value=p.code;$('pPrice').value=p.price;$('pColor').value=p.color||'#2786ff';if(p.image){$('imagePreview').src=p.image;$('imagePreview').style.display='block'}else{$('imagePreview').style.display='none'}$('productFormTitle').textContent='✏️ Editar producto';$('saveProductBtn').textContent='Guardar cambios';$('cancelEditBtn').hidden=false;window.scrollTo({top:0,behavior:'smooth'})}
+function deleteProduct(id){const p=products.find(x=>x.id===id);if(!p)return;const used=sales.some(s=>s.productId===id);const msg=used?'Este producto aparece en ventas anteriores. Se eliminará del catálogo, pero las ventas históricas se conservarán. ¿Continuar?':'¿Eliminar este producto?';if(!confirm(msg))return;products=products.filter(x=>x.id!==id);save();render()}
+function renderProducts(){
+ const body=$('productsBody');body.innerHTML=products.map(p=>`<tr><td>${p.image?`<img src="${p.image}" alt="">`:'—'}</td><td><b>${escapeHtml(p.name)}</b></td><td>${escapeHtml(p.code)}</td><td>${money(p.price)}</td><td><span class="swatch" style="background:${escapeHtml(p.color||'#2786ff')}"></span></td><td><button class="small" onclick="editProduct('${p.id}')">Editar</button> <button class="small danger" onclick="deleteProduct('${p.id}')">Eliminar producto</button></td></tr>`).join('');
+ $('productsEmpty').style.display=products.length?'none':'block';
+ 
+ const options=$('productOptions');
+ if(!products.length){
+   options.innerHTML='<div class="empty">Primero agrega productos.</div>';
+   selectedProductId=null;
+ }else{
+   if(!products.some(p=>p.id===selectedProductId))selectedProductId=null;
+   options.innerHTML=products.map(p=>`<button type="button" class="product-option ${p.id===selectedProductId?'selected':''}" data-product-id="${p.id}" style="border-top:4px solid ${escapeHtml(p.color||'#2786ff')}"><span class="product-choice-line">${p.image?`<img src="${p.image}" alt="">`:'<span class="choice-placeholder">📦</span>'}<span class="product-name">${escapeHtml(p.name)}</span></span><span class="product-code">${escapeHtml(p.code)}</span><span class="product-price">${money(p.price)}</span><span class="product-color" style="background:${escapeHtml(p.color||'#2786ff')}"></span></button>`).join('');
+ }
+}
+function updateSubtotal(){const q=Math.max(0,Number($('saleQty').value)||0),p=Math.max(0,Number($('salePrice').value)||0);$('saleSubtotal').textContent=money(q*p)}
+$('productOptions').addEventListener('click',e=>{
+ const btn=e.target.closest('[data-product-id]');
+ if(!btn)return;
+ selectedProductId=btn.dataset.productId;
+ const p=products.find(x=>x.id===selectedProductId);
+ if(p)$('salePrice').value=p.price;
+ renderProducts();
+ updateSubtotal();
+});
+$('saleQty').addEventListener('input',updateSubtotal);$('salePrice').addEventListener('input',updateSubtotal);
+$('saleForm').addEventListener('submit',e=>{e.preventDefault();const p=products.find(x=>x.id===selectedProductId),qty=Number($('saleQty').value),price=Number($('salePrice').value),date=$('saleDate').value,shift=$('saleShift').value;if(!p){alert('Selecciona un producto.');return}if(!Number.isInteger(qty)||qty<1||!Number.isFinite(price)||price<0||!date||!['mañana','noche'].includes(shift)){alert('Revisa la fecha, jornada, cantidad y precio.');return}sales.push({id:uid(),productId:p.id,name:p.name,code:p.code,date,shift,qty,price,subtotal:qty*price});if(!save())return;$('saleQty').value=1;$('salePrice').value=p.price;updateSubtotal();render();});
+['filterFrom','filterTo','filterShift'].forEach(id=>$(id).addEventListener('change',renderSales));
+$('applyFilters').addEventListener('click',renderSales);
+$('clearFilters').addEventListener('click',()=>{$('filterFrom').value='';$('filterTo').value='';$('filterShift').value='ambas';renderSales()});
+function deleteSale(id){if(!confirm('¿Eliminar este registro de venta?'))return;sales=sales.filter(s=>s.id!==id);save();render()}
+function renderSales(){
+ const from=$('filterFrom').value,to=$('filterTo').value,shiftFilter=$('filterShift').value;
+ const filtered=sales.filter(s=>{
+   const date=String(s.date||'');
+   if(from&&date<from)return false;
+   if(to&&date>to)return false;
+   const shift=s.shift||'';
+   if(shiftFilter==='mañana'&&shift!=='mañana')return false;
+   if(shiftFilter==='noche'&&shift!=='noche')return false;
+   if(shiftFilter==='sin'&&shift)return false;
+   return true;
+ });
+ const sorted=[...filtered].sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))||String(b.id||'').localeCompare(String(a.id||'')));
+ $('salesBody').innerHTML=sorted.map(s=>{
+   const imagenVenta=s.image || products.find(p=>p.id===s.productId)?.image || '';
+   const jornada=s.shift==='mañana'?'Mañana':s.shift==='noche'?'Noche':'Sin registrar';
+   const miniatura=imagenVenta?`<img class="imagen-producto-circular" src="${imagenVenta}" alt="">`:'<span class="sin-imagen-circular">📦</span>';
+   return `<tr><td>${escapeHtml(s.date)}</td><td>${jornada}</td><td class="producto-historial"><div class="producto-linea">${miniatura}<span class="nombre-producto-historial">${escapeHtml(s.name)}</span></div></td><td>${escapeHtml(s.code)}</td><td>${s.qty}</td><td>${money(s.price)}</td><td><span style="font-size:12px;color:var(--suave)">${money(s.price)} × ${s.qty} = </span><b>${money((Number(s.price)||0)*(Number(s.qty)||0))}</b></td><td><button class="small danger" onclick="deleteSale('${s.id}')">Eliminar artículo</button></td></tr>`;
+ }).join('');
+ $('salesEmpty').style.display=filtered.length?'none':'block';
+ $('salesEmpty').textContent=sales.length?'No hay ventas que coincidan con esos filtros.':'Todavía no has registrado ventas.';
+ const totalQty=filtered.reduce((a,s)=>a+(Number(s.qty)||0),0),total=filtered.reduce((a,s)=>a+(Number(s.subtotal??s.qty*s.price)||0),0);
+ $('itemsSold').textContent=totalQty;$('salesCount').textContent=filtered.length;$('grandTotal').textContent=money(total);$('grandTotalBottom').textContent=money(total);
+}
+function renderArchivedHistories(){
+ const box=$('archivedHistoriesContainer');
+ if(!archivedHistories.length){box.innerHTML='';return}
+ box.innerHTML='<h3 style="margin:18px 0 8px">📚 Historiales anteriores</h3>'+[...archivedHistories].reverse().map((h,idx)=>{
+   const total=(h.sales||[]).reduce((a,s)=>a+(Number(s.subtotal??s.qty*s.price)||0),0);
+   const qty=(h.sales||[]).reduce((a,s)=>a+(Number(s.qty)||0),0);
+   return `<details style="background:#111720;border:1px solid var(--borde);border-radius:9px;padding:10px;margin:8px 0">
+   <summary style="cursor:pointer;font-weight:bold">${escapeHtml(h.name||'Historial anterior')} — ${escapeHtml(h.date||'')} · ${money(total)} · ${qty} artículos</summary>
+   <div class="tablewrap" style="margin-top:10px"><table><thead><tr><th>Fecha</th><th>Producto</th><th>Código</th><th>Cantidad</th><th>Precio unitario</th><th>Subtotal</th></tr></thead><tbody>${(h.sales||[]).map(s=>`<tr><td>${escapeHtml(s.date)}</td><td>${escapeHtml(s.name)}</td><td>${escapeHtml(s.code)}</td><td>${s.qty}</td><td>${money(s.price)}</td><td><span style="font-size:12px;color:var(--suave)">${money(s.price)} × ${s.qty} = </span><b>${money((Number(s.price)||0)*(Number(s.qty)||0))}</b></td></tr>`).join('')}</tbody></table></div>
+   <div class="actions"><button type="button" class="small danger" onclick="deleteArchivedHistory('${h.id}')">Eliminar este historial</button></div>
+   </details>`;
+ }).join('');
+}
+function deleteArchivedHistory(id){
+ const h=archivedHistories.find(x=>x.id===id);
+ if(!h)return;
+ if(!confirm('¿Eliminar este historial anterior completo? Esta acción no se puede deshacer.'))return;
+ archivedHistories=archivedHistories.filter(x=>x.id!==id);save();renderArchivedHistories();
+}
+function render(){renderProducts();renderSales();renderArchivedHistories();updateSubtotal()}
+function downloadBlob(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+function dateStamp(){return new Date().toISOString().slice(0,10)}
+function csvCell(v){return '"'+String(v??'').replace(/"/g,'""')+'"'}
+$('exportCsv').addEventListener('click',()=>{const rows=[['Tipo','Fecha','Jornada','Producto','Código','Color','Precio unitario','Cantidad','Subtotal','Imagen (data URL)']];products.forEach(p=>rows.push(['Producto','',p.name,p.code,p.color,p.price,'','','']));sales.forEach(s=>rows.push(['Venta',s.date,s.shift||'Sin registrar',s.name,s.code,'',s.price,s.qty,s.subtotal??s.qty*s.price,'']));const csv='\ufeff'+rows.map(r=>r.map(csvCell).join(';')).join('\r\n');downloadBlob(new Blob([csv],{type:'text/csv;charset=utf-8;'}),`respaldo_productos_ventas_${dateStamp()}.csv`)});
+$('exportExcel').addEventListener('click',()=>{
+ const prodRows=products.map(p=>({Nombre:p.name,Codigo:p.code,Precio:p.price,Color:p.color,Imagen:p.image?'Guardada localmente (usa JSON para respaldarla)':''}));
+ const saleRows=sales.map(s=>({Fecha:s.date,Jornada:s.shift||'Sin registrar',Producto:s.name,Codigo:s.code,Cantidad:s.qty,Precio_unitario:s.price,Subtotal:s.subtotal??s.qty*s.price}));
+ if(typeof XLSX!=='undefined'){const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(prodRows.length?prodRows:[{Aviso:'Sin productos'}]),'Productos');XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(saleRows.length?saleRows:[{Aviso:'Sin ventas'}]),'Ventas');XLSX.writeFile(wb,`respaldo_productos_ventas_${dateStamp()}.xlsx`)}
+ else{const all=[['PRODUCTOS'],['Nombre','Código','Precio','Color'],...prodRows.map(p=>[p.Nombre,p.Codigo,p.Precio,p.Color]),[],['VENTAS'],['Fecha','Producto','Código','Cantidad','Precio unitario','Subtotal'],...saleRows.map(s=>[s.Fecha,s.Producto,s.Codigo,s.Cantidad,s.Precio_unitario,s.Subtotal])];downloadBlob(new Blob(['\ufeff'+all.map(r=>r.map(csvCell).join(';')).join('\r\n')],{type:'text/csv;charset=utf-8;'}),`respaldo_productos_ventas_${dateStamp()}.csv`);alert('No se pudo cargar el generador XLSX. Se descargó un CSV que puedes abrir con Excel. Para generar .xlsx, abre la página con conexión a internet.')}
+});
+$('importBackupBtn').addEventListener('click',()=>$('importBackup').click());
+$('importBackup').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{const d=JSON.parse(await f.text());if(!Array.isArray(d.products)||!Array.isArray(d.sales))throw Error('Formato inválido');if(!confirm('Restaurar reemplazará los productos y ventas actuales. ¿Deseas continuar?'))return;products=d.products;sales=d.sales;archivedHistories=Array.isArray(d.archivedHistories)?d.archivedHistories:[];save();render();alert('Respaldo restaurado.')}catch(err){alert('No se pudo restaurar. Selecciona un archivo JSON exportado por este programa.')}finally{e.target.value=''}});
+$('newSalesHistory').addEventListener('click',()=>{
+ if(!sales.length){alert('No hay ventas en el historial actual para guardar. Registra ventas primero.');return}
+ const stamp=new Date();
+ const date=stamp.toLocaleDateString('es-CO');
+ if(!confirm('Se guardará el historial actual como un historial anterior y se vaciará la tabla de ventas actual. ¿Deseas continuar?'))return;
+ archivedHistories.push({id:uid(),name:'Historial '+(archivedHistories.length+1),date,createdAt:stamp.toISOString(),sales:[...sales]});
+ sales=[];
+ save();render();
+ alert('Nuevo historial iniciado. Las ventas anteriores quedaron guardadas en “Historiales anteriores”.');
+});
+$('clearProducts').addEventListener('click',()=>{
+ if(!products.length){alert('No hay productos guardados para eliminar.');return}
+ if(!confirm('¿Eliminar TODOS los productos guardados? Las ventas históricas se conservarán con sus nombres e imágenes guardados. Esta acción no se puede deshacer.'))return;
+ products=[];selectedProductId=null;resetProductForm();save();render();
+});
+function clearAllSales(){
+ if(!sales.length){alert('No hay ventas para borrar.');return}
+ if(confirm('¿Borrar todo el historial de ventas? Esta acción no se puede deshacer. Exporta un respaldo antes de continuar.')){sales=[];save();render()}
+}
+$('clearSales').addEventListener('click',clearAllSales);
+$('clearSalesHistory').addEventListener('click',clearAllSales);
+// Respaldo JSON, incluida la imagen de cada producto y de las ventas
+const backupBtn=document.createElement('button');backupBtn.type='button';backupBtn.className='secondary';backupBtn.textContent='Descargar respaldo completo JSON';backupBtn.addEventListener('click',()=>downloadBlob(new Blob([JSON.stringify({version:1,exportado:new Date().toISOString(),products,sales,archivedHistories},null,2)],{type:'application/json'}),`respaldo_completo_${dateStamp()}.json`));$('importBackupBtn').parentElement.insertBefore(backupBtn,$('importBackupBtn'));
+window.getAppData=()=>JSON.parse(JSON.stringify({products,sales,archivedHistories}));
+window.applyCloudData=(data)=>{products=Array.isArray(data.products)?data.products:[];sales=Array.isArray(data.sales)?data.sales:[];archivedHistories=Array.isArray(data.archivedHistories)?data.archivedHistories:[];try{localStorage.setItem(STORAGE_KEY,JSON.stringify({products,sales,archivedHistories}))}catch(e){}render();};
+window.applyCloudProductImages=(items)=>{const map=new Map(items.map(p=>[p.id,p.image]));products=products.map(p=>map.has(p.id)?{...p,image:map.get(p.id)}:p);try{localStorage.setItem(STORAGE_KEY,JSON.stringify({products,sales,archivedHistories}))}catch(e){}renderProducts();renderSales();};
+load();setToday();render();
+// Optimiza imágenes antiguas al abrir, reutiliza la misma imagen del producto en vez de duplicarla en cada venta.
+(async function optimizeExistingImages(){try{const cache=new Map();const optimize=async src=>{if(!src)return '';if(cache.has(src))return cache.get(src);const compact=await compressDataUrl(src);cache.set(src,compact);return compact};for(const p of products){if(p.image)p.image=await optimize(p.image)}for(const sale of sales){if(sale.image){const productStillExists=products.some(p=>p.id===sale.productId);if(productStillExists)delete sale.image;else sale.image=await optimize(sale.image)}}for(const h of archivedHistories){for(const sale of (h.sales||[])){if(sale.image){const productStillExists=products.some(p=>p.id===sale.productId);if(productStillExists)delete sale.image;else sale.image=await optimize(sale.image)}}}save();render()}catch(err){console.warn('No se pudieron optimizar todas las imágenes',err)}})();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, getDocs } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import { getStorage, ref, uploadString, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAuX8xvjPOxuUQA7C_ab-jxAX8IeojAjow",
+  authDomain: "ventas-locales-d7ff6.firebaseapp.com",
+  projectId: "ventas-locales-d7ff6",
+  storageBucket: "ventas-locales-d7ff6.firebasestorage.app",
+  messagingSenderId: "435638798346",
+  appId: "1:435638798346:web:abd33c9979f1abe59037f3",
+  measurementId: "G-K24NQSVLQH"
+};
+const app=initializeApp(firebaseConfig), auth=getAuth(app), db=getFirestore(app), storage=getStorage(app);
+const $=id=>document.getElementById(id);
+let currentUser=null, stopListeners=[], cloudReady=false, syncing=false, applyingRemote=false, ignoreRemoteUntil=0, lastCloud={products:[],sales:[],archivedHistories:[]};
+const setStatus=(msg)=>{$('cloudStatus').textContent='Estado: '+msg};
+const hasLocalData=()=>{const d=window.getAppData();return d.products.length||d.sales.length||d.archivedHistories.length};
+function userCollection(name){return collection(db,'users',currentUser.uid,name)}
+function cleanupListeners(){stopListeners.forEach(fn=>fn());stopListeners=[];cloudReady=false;}
+function renderAuth(user){$('authFormWrap').hidden=!!user;$('cloudLoggedIn').hidden=!user;if(user){$('cloudUserLabel').textContent='Sesión iniciada: '+user.email+' · Usa esta misma cuenta en el celular y en el PC.'}}
+async function imageToCloud(product){let image=product.image||'';if(image.startsWith('data:image/')){const path=`users/${currentUser.uid}/products/${product.id}.jpg`;const fileRef=ref(storage,path);await uploadString(fileRef,image,'data_url',{contentType:'image/jpeg'});image=await getDownloadURL(fileRef);}return {...product,image};}
+async function replaceCollection(name,items){const col=userCollection(name);const snap=await getDocs(col);const ids=new Set(items.map(x=>String(x.id)));for(const old of snap.docs){if(!ids.has(old.id))await deleteDoc(old.ref)}for(const item of items){await setDoc(doc(col,String(item.id)),item)} }
+async function uploadAll(data){if(!currentUser)throw new Error('Inicia sesión primero.');syncing=true;setStatus('subiendo datos e imágenes…');try{
+ const normalizedProducts=[];for(const p of data.products){normalizedProducts.push(await imageToCloud(p));}
+ await replaceCollection('products',normalizedProducts);
+ await replaceCollection('sales',data.sales);
+ await replaceCollection('archivedHistories',data.archivedHistories);
+ window.applyCloudProductImages(normalizedProducts);
+ lastCloud={products:normalizedProducts,sales:data.sales,archivedHistories:data.archivedHistories};
+ ignoreRemoteUntil=Date.now()+2500;setStatus('sincronizado correctamente. Puedes abrir el programa en otro dispositivo con esta cuenta.');
+ }finally{syncing=false}}
+window.cloudSyncSave=async()=>{if(!currentUser||!cloudReady||syncing||applyingRemote)return;await uploadAll(window.getAppData())};
+function startListeners(){cleanupListeners();if(!currentUser)return;let received={products:false,sales:false,archivedHistories:false};let firstPass=true;
+ for(const name of ['products','sales','archivedHistories']){
+  const stop=onSnapshot(userCollection(name),(snap)=>{
+   lastCloud[name]=snap.docs.map(d=>({...d.data(),id:d.id}));received[name]=true;
+   if(!Object.values(received).every(Boolean)||syncing||Date.now()<ignoreRemoteUntil)return;
+   const any=lastCloud.products.length||lastCloud.sales.length||lastCloud.archivedHistories.length;
+   if(firstPass){firstPass=false;cloudReady=true;if(any){applyingRemote=true;window.applyCloudData(lastCloud);applyingRemote=false;setStatus('datos de la nube cargados y sincronización activa.')}else if(hasLocalData()){setStatus('la nube está vacía. Pulsa “Subir datos de este dispositivo a la nube” para transferir tus datos actuales.')}else{setStatus('conectado. La nube está vacía; los nuevos registros se sincronizarán.')}return;}
+   applyingRemote=true;window.applyCloudData(lastCloud);applyingRemote=false;setStatus('sincronización activa. Última actualización recibida.');
+  },err=>{console.error(err);setStatus('error al leer la nube: '+err.message+' Revisa las reglas de Firestore.')});stopListeners.push(stop);
+ }
+}
+$('cloudAuthForm').addEventListener('submit',async e=>{e.preventDefault();try{setStatus('iniciando sesión…');await signInWithEmailAndPassword(auth,$('cloudEmail').value.trim(),$('cloudPassword').value);$('cloudPassword').value='';}catch(err){setStatus('no se pudo iniciar sesión: '+friendly(err));}});
+$('createCloudAccount').addEventListener('click',async()=>{const email=$('cloudEmail').value.trim(),password=$('cloudPassword').value;if(!email||password.length<6){alert('Escribe tu correo y una contraseña de al menos 6 caracteres.');return}try{setStatus('creando cuenta…');await createUserWithEmailAndPassword(auth,email,password);$('cloudPassword').value='';alert('Cuenta creada. Usa este mismo correo y contraseña en tus dos dispositivos.');}catch(err){setStatus('no se pudo crear la cuenta: '+friendly(err));}});
+$('cloudLogout').addEventListener('click',async()=>{cleanupListeners();await signOut(auth);setStatus('sesión cerrada. Los datos locales permanecen en este dispositivo.')});
+$('uploadLocalToCloud').addEventListener('click',async()=>{if(!currentUser)return;if(!confirm('Esto copiará los datos de este dispositivo a la nube y reemplazará los registros en la nube con los mismos identificadores. Descarga un respaldo JSON antes de continuar. ¿Deseas seguir?'))return;try{await uploadAll(window.getAppData());alert('Datos enviados a la nube. Abre el programa en el otro dispositivo e inicia sesión con la misma cuenta.')}catch(err){console.error(err);setStatus('no se pudo subir: '+friendly(err)+' Revisa Firestore y Storage.')}});
+$('downloadCloudToLocal').addEventListener('click',()=>{if(!currentUser)return;if(!confirm('Los datos de la nube reemplazarán los datos locales de este dispositivo. Descarga un respaldo JSON antes de continuar. ¿Deseas seguir?'))return;applyingRemote=true;window.applyCloudData(lastCloud);applyingRemote=false;setStatus('datos de la nube cargados en este dispositivo.')});
+onAuthStateChanged(auth,user=>{currentUser=user;renderAuth(user);cleanupListeners();if(user){setStatus('cuenta conectada; comprobando datos…');startListeners()}else setStatus('sin iniciar sesión. Los datos actuales siguen guardados localmente.')});
+function friendly(err){const code=err?.code||'';if(code.includes('auth/invalid-credential'))return 'correo o contraseña incorrectos.';if(code.includes('auth/email-already-in-use'))return 'ese correo ya tiene una cuenta. Inicia sesión.';if(code.includes('auth/weak-password'))return 'la contraseña debe tener al menos 6 caracteres.';if(code.includes('auth/operation-not-allowed'))return 'activa Correo electrónico/Contraseña en Authentication.';if(code.includes('permission-denied'))return 'acceso denegado. Revisa las reglas de Firestore y Storage.';return err?.message||'error desconocido.'}
+</script>
+</body>
+</html>
